@@ -1,0 +1,1 @@
+app/GPT_SoVITS/pretrained_models/s2G488k.pth

@@ -1,0 +1,3 @@
+# 模型
+pretrained_models/*
+!pretrained_models/PLACEHOLDER

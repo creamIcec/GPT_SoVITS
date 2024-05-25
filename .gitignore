@@ -1,3 +1,10 @@
 # 模型
 pretrained_models/*
 !pretrained_models/PLACEHOLDER
+
+# 中间文件
+*.pyc
+__pycache__
+
+# 测试资源
+refer.wav

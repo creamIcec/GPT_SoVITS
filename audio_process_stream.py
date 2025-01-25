@@ -29,7 +29,7 @@ def get_streaming_tts_wav(
     prompt_language,
     text,
     text_language,
-    how_to_cut=i18n("不切"),
+    how_to_cut=i18n("按标点符号切"),
     top_k=20,
     top_p=0.6,
     temperature=0.6,
@@ -71,7 +71,7 @@ def get_streaming_tts_wav(
     );
 
     if byte_stream:
-        yield wave_header_chunk();
+        #yield wave_header_chunk();
         for chunk in chunks:
             yield chunk;
     else:
@@ -82,6 +82,10 @@ def get_streaming_tts_wav(
             file = f"{tempfile.gettempdir()}/{i}.{format}";
             segment = AudioSegment(chunk, frame_rate=32000, sample_width=2, channels=1);
             segment.export(file, format=format);
-            yield file;
+            print("file:" + file);
+            with open(file, 'rb') as f:
+                yield f.read()  # Yield 文件内容
+
+
 
 # 在server中添加一个测试路由，用于流式返回音频

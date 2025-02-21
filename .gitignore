@@ -1,6 +1,8 @@
 # 模型
 pretrained_models/*
 !pretrained_models/PLACEHOLDER
+!pretrained_models/chinese-roberta-wwm-ext-large/config.json
+!pretrained_models/chinese-roberta-wwm-ext-large/tokenizer.json
 
 # 中间文件
 *.pyc

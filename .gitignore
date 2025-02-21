@@ -1,8 +1,9 @@
 # 模型
-pretrained_models/*
 !pretrained_models/PLACEHOLDER
-!pretrained_models/chinese-roberta-wwm-ext-large/config.json
-!pretrained_models/chinese-roberta-wwm-ext-large/tokenizer.json
+pretrained_models/chinese-hubert-base
+pretrained_models/chinese-roberta-wwm-ext-large/pytorch_model.bin
+pretrained_models/*.ckpt
+pretrained_models/*.pth
 
 # 中间文件
 *.pyc

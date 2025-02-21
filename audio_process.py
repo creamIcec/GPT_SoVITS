@@ -1,4 +1,5 @@
-import os, re;
+import os, re
+from typing import Generator;
 import LangSegment;
 
 from time import time as ttime;
@@ -344,7 +345,40 @@ def merge_short_text_in_array(texts, threshold):
             result[len(result) - 1] += text
     return result
 
-def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, top_p=0.6, temperature=0.6, ref_free = False):
+def get_tts_wav(
+    ref_wav_path,
+    prompt_text,
+    prompt_language,
+    text,
+    text_language,
+    how_to_cut=i18n("不切"),
+    top_k=20,
+    top_p=0.6,
+    temperature=0.6,
+    ref_free = False,
+    stream=False
+):
+    '''核心函数: 合成语音。
+
+    Args:
+        ref_wav_path (str): 参考音频的路径。
+        prompt_text (str): 参考文本的内容。
+        prompt_language (str): 参考文本的语言代号。必须存在于 `dict_language` 字典中。
+        text (str): 待合成的文本内容。
+        text_language (str): 待合成的文本的语言代号。必须存在于 `dict_language` 字典中。
+        how_to_cut (str): 切分方式。必须存在于 `i18n` 字典中。
+        top_k (int): 单步累计采用Token数。越大单次预测生成的音频越长; 过小可能导致生成不连续, 过大可能导致生成效果变差。
+        top_p (int): 单步累计采用的概率阈值。越大时将会有"更远"的Token被采用; 和top_k的作用类似, 使用时, 优先考虑top_k, 再考虑top_p。
+        temperature (_type_): 控制生成音频的随机性。以1为基准, 越大于1的值越随机, 越小于1的值越稳定。
+        ref_free (_type_): 是否使用参考音频。
+        stream (bool, optional): 是否流式传输。默认为False。
+
+    Raises:
+        OSError: 参考音频长度不在范围内。
+
+    Yields:
+        tuple: 音频的采样率和以数组形式表示的音频数据。
+    '''
     if prompt_text is None or len(prompt_text) == 0:
         ref_free = True
     t0 = ttime()
@@ -356,7 +390,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         print(i18n("实际输入的参考文本:"), prompt_text)
     text = text.strip("\n")
     if (text[0] not in splits and len(get_first(text)) < 4): text = "。" + text if text_language != "en" else "." + text
-    
+
     print(i18n("实际输入的目标文本:"), text)
     zero_wav = np.zeros(
         int(hps.data.sampling_rate * 0.3),
@@ -381,7 +415,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
             1, 2
         )  # .float()
         codes = vq_model.extract_latent(ssl_content)
-   
+
         prompt_semantic = codes[0, 0]
     t1 = ttime()
 
@@ -461,10 +495,15 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         audio_opt.append(audio)
         audio_opt.append(zero_wav)
         t4 = ttime()
-    print("%.3f\t%.3f\t%.3f\t%.3f" % (t1 - t0, t2 - t1, t3 - t2, t4 - t3))
-    yield hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(
-        np.int16
-    )
+
+        if (stream):
+            yield (np.concatenate([audio, zero_wav], 0) * 32768).astype(np.int16).tobytes();
+
+    if not stream:
+
+        yield hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(
+            np.int16
+        )
 
 
 def split(todo_text):
